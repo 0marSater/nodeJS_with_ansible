@@ -100,7 +100,7 @@ To begin, follow these steps:
     ![initialPassword](./Images/initialPassword.png)
 
 - Navigate to http://<master_ip>:8080/ and set up the Jenkins GUI, and do following steps:
-    1. Install ***SSH Agent** plugin.
+    1. Install ***SSH Agent*** plugin.
     
     2. Add credentials for the Docker private repository ***(username and password)***.
        [DockerHub Credentials](https://prnt.sc/0e8cR18PSkvr)
@@ -122,8 +122,8 @@ To begin, follow these steps:
 - Test the application by navigating to the ***http://<alb_dns>/db*** and ***http://<alb_dns>/redis***.
     > Upon visiting /db, you should see a message that says ***db connection successful***, and when navigating to /redis, you should see  ***redis is successfuly connected***.
 
-## Clear up
-- To clear up or delete all AWS resources provisioned using Terraform, you can use the `terraform destroy --auto-approve`, This command will destroy all the resources defined within your Terraform configuration.
+## Clean up
+- To clean up or delete all AWS resources provisioned using Terraform, you can use the `terraform destroy --auto-approve`, This command will destroy all the resources defined within your Terraform configuration.
 
 
 
