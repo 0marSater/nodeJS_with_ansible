@@ -1,0 +1,81 @@
+---
+- hosts: jenkins-master
+  remote_user: ubuntu
+  become: yes
+  tasks:
+    - name: update apt repo
+      apt:
+        update_cache: yes
+
+    - name: install python3-pip
+      apt:
+        name: python3-pip
+        state: present
+
+    - name: install openjdk 11
+      apt:
+        name: openjdk-11-jdk
+        state: present
+
+    - name: install vim
+      apt:
+        name: vim
+        state: present
+
+    - name: install docker
+      apt:
+        name: docker.io
+        state: present
+
+    - name: start and enable docker
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Install Docker python library
+      pip:
+        name: docker
+        state: present
+
+    - name: Pull Jenkins image from Docker Hub
+      docker_image:
+        name: jenkins/jenkins:lts
+        source: pull
+
+    - name: Run Jenkins container
+      docker_container:
+        name: jenkins_container
+        image: jenkins/jenkins
+        state: started
+        restart_policy: always
+        ports:
+          - "8080:8080"
+          - "50000:50000"
+        volumes:
+          - "jenkins_home:/var/jenkins_home"
+
+    - name: wait for the website to become available
+      wait_for:
+        host: "{{ master_ip }}"
+        port: 8080
+        state: started
+        delay: 5
+        timeout: 60
+
+#    - name: navigate to Jenkins website to initialize initialAdminPassword file.
+#      uri:
+#        url: "http://{{ master_ip }}:8080"
+#        method: GET
+#      register: result
+#      until: result.status == 200
+#      retries: 5
+#      delay: 5
+
+    - name: display the initial password
+      shell: cat /var/lib/docker/volumes/jenkins_home/_data/secrets/initialAdminPassword
+      register: file_content
+
+    - name: display the initial password
+      debug:
+        var: file_content.stdout

@@ -1,0 +1,102 @@
+pipeline {
+    agent {
+        label 'slave1'
+    }
+    environment {
+        def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim() 
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Build Docker image with the commit hash as the tag
+                    sh """"
+                    cd .. &&
+                    docker build . --file Dockerfile --tag nodejs:${commitHash}
+                    """
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'DOCKERHUB_ID', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
+                        echo "Log in to dockerhub repo ..."
+                        sh "docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}"
+                        // Build Docker image with the commit hash as the tag
+                        echo "Tagging the image"
+                        sh "docker tag nodejs:${commitHash} omarsater/private-repo:v-${commitHash}"
+
+                        echo "Pushing to dockerhub ..."
+                        sh "docker push omarsater/private-repo:v-${commitHash}"
+                    }
+                }
+            }
+        }
+
+
+    stage('Environment Input') {
+            steps {
+                script {
+                    def userInput = input(
+                        id: 'userInput',
+                        message: 'Please provide the following information:',
+                        parameters: [
+                        string(defaultValue: '', description: 'Server IP', name: 'SERVER_IP'),
+                        string(defaultValue: '', description: 'RDS Hostname', name: 'RDS_HOSTNAME'),
+                        string(defaultValue: '', description: 'RDS Username', name: 'RDS_USERNAME'),
+                        string(defaultValue: '', description: 'RDS Password', name: 'RDS_PASSWORD'),
+                        string(defaultValue: '', description: 'RDS Port', name: 'RDS_PORT'),
+                        string(defaultValue: '', description: 'Redis Hostname', name: 'REDIS_HOSTNAME'),
+                        string(defaultValue: '', description: 'Redis Port', name: 'REDIS_PORT')
+                    ]
+                )
+                        env.SERVER_IP = userInput['SERVER_IP']
+                        env.RDS_HOSTNAME = userInput['RDS_HOSTNAME']
+                        env.RDS_USERNAME = userInput['RDS_USERNAME']
+                        env.RDS_PASSWORD = userInput['RDS_PASSWORD']
+                        env.RDS_PORT = userInput['RDS_PORT']
+                        env.REDIS_HOSTNAME = userInput['REDIS_HOSTNAME']
+                        env.REDIS_PORT = userInput['REDIS_PORT']
+                    }
+            }
+        }
+
+        stage('Deploy on remote server') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'DOCKERHUB_ID', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
+                        sshagent(['SERVER_CREDENTIALS']) {
+                            sh """
+                                ssh -o StrictHostKeyChecking=no ubuntu@${env.SERVER_IP} '
+                                    docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD} &&
+                                    docker pull omarsater/private-repo:v-${commitHash} &&
+                                    docker run -d \
+                                    -e RDS_HOSTNAME='${env.RDS_HOSTNAME}' \
+                                    -e RDS_USERNAME='${env.RDS_USERNAME}' \
+                                    -e RDS_PASSWORD="${env.RDS_PASSWORD}" \
+                                    -e RDS_PORT='${env.RDS_PORT}' \
+                                    -e REDIS_HOSTNAME='${env.REDIS_HOSTNAME}' \
+                                    -e port='${env.REDIS_PORT}' \
+                                    -p 80:3000 \
+                                    omarsater/private-repo:v-${commitHash}
+                                '
+                            """
+    
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+}

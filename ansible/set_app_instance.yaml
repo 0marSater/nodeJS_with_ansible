@@ -1,0 +1,31 @@
+---
+- hosts: app
+  remote_user: ubuntu
+  become: yes
+  tasks:
+    - name: update apt repo
+      apt:
+        update_cache: yes
+
+    - name: install docker
+      apt:
+        name: docker.io
+        state: present
+      delay: 15
+
+    - name: start and enable docker
+      service:
+        name: docker
+        state: started
+        enabled: yes
+  
+    - name: add user ubuntu to docker group
+      user:
+        name: ubuntu
+        groups: docker 
+        
+    - name: modify docker.sock file permission and change group
+      file:
+        path: /var/run/docker.sock
+        group: docker
+        mode: '0775'

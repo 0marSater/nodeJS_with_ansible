@@ -1,0 +1,82 @@
+---
+- hosts: jenkins-slave
+  remote_user: ubuntu
+  become: yes
+  tasks:
+    - name: update apt repo
+      apt:
+        update_cache: yes
+
+    - name: install openjdk 11
+      apt:
+        name: openjdk-11-jdk
+        state: present
+
+    - name: install vim
+      apt:
+        name: vim
+        state: present
+
+    - name: install docker
+      apt:
+        name: docker.io
+        state: present
+      delay: 15
+
+    - name: start and enable docker
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: create user jenkins
+      user:
+        name: jenkins
+        shell: /bin/bash
+        createhome: yes
+        groups: docker
+
+    - name: create dir jenkins_home
+      file:
+        path: /home/jenkins/jenkins_home
+        state: directory
+        owner: jenkins
+        group: jenkins
+
+    - name: create dir .ssh for jenkins user
+      file:
+        path: /home/jenkins/.ssh
+        state: directory
+        owner: jenkins
+        group: jenkins
+
+    - name: modify docker.sock file permission and change group
+      file:
+        path: /var/run/docker.sock
+        group: docker
+        mode: '0775'
+
+    # - name: generate SSH key pair
+    #   openssh_keypair:
+    #     path: /home/jenkins/.ssh/id_rsa
+    #     size: 2048
+    #     mode: '0400'
+    #     owner: jenkins
+    #     group: jenkins
+
+    # - name: Copy contents of public key to authorized_keys
+    #   copy:
+    #     remote_src: yes
+    #     src: /home/jenkins/.ssh/id_rsa.pub
+    #     dest: /home/jenkins/.ssh/authorized_keys
+    #     owner: jenkins
+    #     group: jenkins
+
+
+    # - name: cat private key
+    #   shell: cat /home/jenkins/.ssh/id_rsa
+    #   register: file_content
+
+    # - name: Display file content
+    #   debug:
+    #     var: file_content.stdout
