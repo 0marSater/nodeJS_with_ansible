@@ -20,7 +20,7 @@ pipeline {
                     // Build Docker image with the commit hash as the tag
                     sh """"
                     cd .. &&
-                    docker build . --file ../Dockerfile --tag nodejs:${commitHash}
+                    docker build . --file Dockerfile --tag nodejs:${commitHash}
                     """
                 }
             }
