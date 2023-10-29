@@ -114,7 +114,7 @@ To begin, follow these steps:
         > in case of using ssh for connection, you have to ***uncomment*** couble of blocks in ***setup_slave_instance.yaml*** , either way you can curl agent.jar and connecting it by executing certain commands. Follow this  [Connect Jenkins Slave to  the Master](https://medium.com/@DevOpsfreak/how-to-configure-jenkins-slave-nodes-by-launching-agents-via-ssh-or-launch-agent-via-execution-of-a0cf6d6dd032) for more info
 
 - After successfully launching and connecting the agent to the master, configure a new pipeline run on slave server and start the application's build and deployment process.
-       [Pipeline Configuration Image](https://prnt.sc/-FChTqXDGpk1)
+       [Pipeline Configuration Image](https://prnt.sc/U6H-p3G0hhLO)
 
 - While deploying the application through the Jenkins stage, you will be prompted to enter certain required environment variables necessary for running the Docker container. Ensure that you fill them with the correct values.
        [Input Stage Image](https://prnt.sc/rUK4d4Mr4qKA)
