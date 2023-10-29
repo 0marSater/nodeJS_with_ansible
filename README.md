@@ -1,7 +1,7 @@
 # Build and Deploy NodeJS app with AWS Integration
 This is a demo project showcasing the process of building and deploying a NodeJS application on AWS. The application connects to AWS RDS MySQL database and utilizes AWS ElasticCache Redis for enhanced performance and scalability.
 
-![diagram](./Images/diagram.png)
+![diagram](./Images/Diagram.png)
 
 
 ---
