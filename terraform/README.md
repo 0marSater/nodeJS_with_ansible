@@ -1,6 +1,7 @@
 # Terraform Strcuture
 The project structure is organized as follows:
-![strcuture](../Images/terraformStructure)
+
+![strcuture](../Images/terraformStructure.png)
 
 The `modules` directory contains subfolders for each module. Each module has its terraform configuration files, which define the module's configuration, input variables, and output values, respectively.
 
